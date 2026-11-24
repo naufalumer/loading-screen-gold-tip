@@ -2,8 +2,10 @@
 
 Writes one original funny loading-screen tip for stressed developers
 and AI coding agents, a single line of at most 200 characters, to
-$MAKEFUN_OUTPUT_DIR/entry.txt. Standard library only; no network,
-no files read, no randomness: the output is byte-identical every run.
+$MAKEFUN_OUTPUT_DIR/entry.txt, then reads it back to prove the file
+holds exactly that line. Standard library only; no network, no files
+read except the entry it just wrote, no randomness: the output is
+byte-identical every run.
 """
 
 import os
@@ -33,7 +35,12 @@ def write_entry():
         raise SystemExit(1)
     out_dir = Path(os.environ.get("MAKEFUN_OUTPUT_DIR", "/output"))
     out_dir.mkdir(parents=True, exist_ok=True)
-    (out_dir / "entry.txt").write_text(TIP, encoding="utf-8")
+    target = out_dir / "entry.txt"
+    target.write_text(TIP, encoding="utf-8")
+    # Prove the file on disk holds exactly the tip, nothing more.
+    if target.read_text(encoding="utf-8") != TIP:
+        print("entry.txt does not match the tip", file=sys.stderr)
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":
